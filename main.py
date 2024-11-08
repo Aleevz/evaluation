@@ -180,7 +180,6 @@ def process_answer(selected_answer, correct_answer):
     time.sleep(1)
     st.rerun()
 
-
 # Iniciar el experimento
 # if __name__ == "__main__":
 # st.title("Visualisation Evaluation")
@@ -225,6 +224,7 @@ if not st.session_state.experiment_started:
               linked to your responses.""")
     if st.button("Start Experiment"):
         start_experiment()
+        st.session_state.question_start_time = time.time()
         st.rerun()
 else:
     col1, col2 = st.columns(2)
@@ -246,11 +246,10 @@ else:
         st.subheader(question)
         answer = st.radio(" ", options, index=None)
 
-        st.session_state.question_start_time = time.time()
-
         st.session_state.question_answered = not st.session_state.question_answered
         
         st.session_state.selected_answer = answer
 
         if st.session_state.selected_answer:
             process_answer(answer, options[answer_idx])
+            st.session_state.question_start_time = time.time()
