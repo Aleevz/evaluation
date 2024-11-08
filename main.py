@@ -15,11 +15,13 @@ file_name = Path("results_experiment.csv")
 if file_name.is_file():
     # If the file exists, it opens the file and read it
     df_results = pd.read_csv(file_name)
+    st.session_state.user_id = df_results.iloc[-1]["participant_ID"].astype(int) + 1
 else:
     # If it doesn't, it creates a .csv file with the name 'results_experiment.csv'
     df_results = pd.DataFrame(
-        columns=["participant_ID", "vis_type", "correct_answer", "time_(s)"]
+        columns=["participant_ID", "question_number", "vis_type", "correct_answer", "time_(s)"]
     )  # Creation of a dataframe
+    st.session_state.user_id = 1
 
 
 # Function to get id and create a new one
@@ -88,6 +90,15 @@ def generate_visualisation(df, no_question):
     return fig
 
 
+def generate_whitescreen():
+    fig = plt.figure(figsize=(12, 10))
+
+    # Set the face color of the figure to white (this is the background color)
+    fig.patch.set_facecolor('white')
+
+    return fig
+
+
 def generate_question_and_answers(data):
     # Select highest or lowest
     hl = "highest" if random.randint(0, 1) else "lowest"
@@ -140,13 +151,51 @@ def add_result(df, part_id, v_type, answer, t):
     return pd.concat([df, result], ignore_index=True)
 
 
+def process_answer(selected_answer, correct_answer):
+    time_taken = time.time() - st.session_state.question_start_time
+    correct = 1 if selected_answer == correct_answer else 0
+    vis_type = "heatmap" if st.session_state.question_num % 2 == 1 else "scatterplot"
+
+    results = {
+        "participant_ID": st.session_state.user_id,
+        "question_number": st.session_state.question_num,
+        "vis_type": vis_type,
+        "correct_answer": correct,
+        "time_(s)": time_taken,
+    }
+
+    new_row = pd.DataFrame([results])
+
+    st.session_state.user_results = pd.concat([st.session_state.user_results, new_row], ignore_index=True)
+
+    print(st.session_state.user_results)
+
+    st.markdown("""
+                <style>
+                body {
+                    display: none;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+    time.sleep(1)
+    st.rerun()
+
+
 # Iniciar el experimento
 # if __name__ == "__main__":
 # st.title("Visualisation Evaluation")
 
 
 def start_experiment():
+    global df_results
     st.session_state.experiment_started = True
+    st.session_state.question_answered = False
+    st.session_state.question_num = 1
+    st.session_state.data = None
+    st.session_state.question_data = None
+    st.session_state.selected_answer = None
+    st.session_state.question_start_time = None
+    st.session_state.user_results = df_results
     st.empty()
 
 
@@ -179,13 +228,29 @@ if not st.session_state.experiment_started:
         st.rerun()
 else:
     col1, col2 = st.columns(2)
-    data = generate_random_data()
-    vis = generate_visualisation(data, 1)
-    question, options, answer_idx = generate_question_and_answers(data)
+
+    if not st.session_state.question_answered:
+        st.session_state.data = data = generate_random_data()
+        vis = generate_visualisation(data, st.session_state.question_num)
+        st.session_state.question_num += 1
+        st.session_state.question_data = question, options, answer_idx = generate_question_and_answers(data)
+    else:
+        data = st.session_state.data
+        question, options, answer_idx = st.session_state.question_data
 
     with col1:
-        st.pyplot(vis, use_container_width=True)
+        if not st.session_state.question_answered:
+            st.pyplot(vis, use_container_width=True)
 
     with col2:
         st.subheader(question)
-        answers = st.radio(" ", options)
+        answer = st.radio(" ", options, index=None)
+
+        st.session_state.question_start_time = time.time()
+
+        st.session_state.question_answered = not st.session_state.question_answered
+        
+        st.session_state.selected_answer = answer
+
+        if st.session_state.selected_answer:
+            process_answer(answer, options[answer_idx])
