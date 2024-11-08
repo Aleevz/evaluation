@@ -45,6 +45,8 @@ months = [
     "July",
 ]
 
+school_options = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+
 participant_id = get_id(df_results)
 
 
@@ -52,7 +54,7 @@ def generate_random_data():
     data = np.random.randint(20, 100, size=(10, 11))
 
     df = pd.DataFrame(data, columns=months)
-    df["School"] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+    df["School"] = school_options
     df = df[["School"] + df.columns[:-1].tolist()]
 
     return df
@@ -101,19 +103,22 @@ def generate_question_and_answers(data):
         question = question.replace("[month]", month)
 
         # Find the correct answer to the question
-        correct_answer = data[month].idxmax() if hl == "highest" else data[month].idxmin()
+        correct_answer_idx = data[month].idxmax() if hl == "highest" else data[month].idxmin()
+        correct_answer = f"School {data.iloc[correct_answer_idx]["School"]}"
 
         # Select three random incorrect answers
-        answers = random.sample([school for school in data.index if school != correct_answer], 3)
+        answers = random.sample([f"School {data.iloc[school]["School"]}" for school in data.index if school != correct_answer_idx], 3)
     else:
+        schools = school_options
+
         # Select a random school
-        school = random.randint(1, 10)
+        school = random.randint(0, 9)
 
         # Update the question with that school
-        question = question.replace("[school]", f"School {school}")
+        question = question.replace("[school]", f"School {schools[school]}")
 
         # Find the correct answer to the question
-        correct_answer = data.iloc[school - 1].idxmax() if hl == "highest" else data.iloc[school - 1].idxmin()
+        correct_answer = data.iloc[school][months].idxmax() if hl == "highest" else data.iloc[school][months].idxmin()
 
         # Select three random incorrect answers
         answers = random.sample([month for month in months if month != correct_answer], 3)
@@ -155,14 +160,14 @@ if not st.session_state.experiment_started:
               visualizations: scatterplots or heatmaps. 
               The questions are alternated between the two visualization types, 
               with a brief one-second white screen between each question.
-             
+
               \nThe experiment will take approximately 35 minutes. 
               Once you select an answer option for each question, 
               you will not have the opportunity to change it, 
               and you will automatically proceed to the next question. 
               Please read each question carefully and answer thoughtfully, 
               as your responses cannot be modified once submitted.
-             
+
               \nYour responses will be recorded anonymously. 
               No personal data will be collected, and your identity will not be 
               linked to your responses.""")
@@ -173,10 +178,11 @@ else:
     col1, col2 = st.columns(2)
     data = generate_random_data()
     vis = generate_visualisation(data, 1)
+    question, options, answer_idx = generate_question_and_answers(data)
 
     with col1:
         st.pyplot(vis, use_container_width=True)
 
     with col2:
-        st.subheader("Insert the question here")
-        answer = st.radio(" ", ["School A", "School B", "School C"])
+        st.subheader(question)
+        answers = st.radio(" ", options)
