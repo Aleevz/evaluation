@@ -154,7 +154,7 @@ def add_result(df, part_id, v_type, answer, t):
 def process_answer(selected_answer, correct_answer):
     time_taken = time.time() - st.session_state.question_start_time
     correct = 1 if selected_answer == correct_answer else 0
-    vis_type = "heatmap" if st.session_state.question_num % 2 == 1 else "scatterplot"
+    vis_type = "heatmap" if st.session_state.question_num % 2 == 0 else "scatterplot"
 
     results = {
         "participant_ID": st.session_state.user_id,
@@ -189,7 +189,7 @@ def start_experiment():
     global df_results
     st.session_state.experiment_started = True
     st.session_state.question_answered = False
-    st.session_state.question_num = 1
+    st.session_state.question_num = 0
     st.session_state.data = None
     st.session_state.question_data = None
     st.session_state.selected_answer = None
@@ -234,6 +234,7 @@ else:
         vis = generate_visualisation(data, st.session_state.question_num)
         st.session_state.question_num += 1
         st.session_state.question_data = question, options, answer_idx = generate_question_and_answers(data)
+        st.session_state.question_start_time = time.time()
     else:
         data = st.session_state.data
         question, options, answer_idx = st.session_state.question_data
@@ -252,4 +253,3 @@ else:
 
         if st.session_state.selected_answer:
             process_answer(answer, options[answer_idx])
-            st.session_state.question_start_time = time.time()
