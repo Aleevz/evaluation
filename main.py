@@ -16,10 +16,15 @@ if os.path.isfile(file_name):
     df_results = pd.read_csv(file_name)
 else:
     # If it doesn't, it creates a .csv file with the name 'results_experiment.csv'
-    df_results = pd.DataFrame(columns=["participant_ID", "vis_type", "correct_answer", "time_(s)"])  # Creation of a dataframe
+    df_results = pd.DataFrame(
+        columns=["participant_ID", "vis_type", "correct_answer", "time_(s)"]
+    )  # Creation of a dataframe
+
 
 # Function to get id and create a new one
-def get_id(df): return 0 if df.empty else (df.iloc[-1, 0] + 1)
+def get_id(df):
+    return 0 if df.empty else (df.iloc[-1, 0] + 1)
+
 
 questions = [
     "Which school had the [size] number absences in [month]?",
@@ -42,41 +47,44 @@ months = [
 
 participant_id = get_id(df_results)
 
-def generate_random_data(): 
-    data = np.random.randint(20, 100, size=(10, 11))  
+
+def generate_random_data():
+    data = np.random.randint(20, 100, size=(10, 11))
 
     df = pd.DataFrame(data, columns=months)
-    df['School'] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
-    df = df[['School'] + df.columns[:-1].tolist()]  
+    df["School"] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+    df = df[["School"] + df.columns[:-1].tolist()]
 
     return df
+
 
 def generate_visualisation(df, no_question):
     fig = plt.figure(figsize=(12, 10))
     if no_question % 2 == 0:
-        markers = ['o', 's', '^','<','>', '*','+','p','D','v']
+        markers = ["o", "s", "^", "<", ">", "*", "+", "p", "D", "v"]
 
-        for i, school in enumerate(df['School']):
-            plt.scatter(df.columns[1:], df.iloc[i, 1:], marker=markers[i], label=school, color = 'k', s=100,zorder=3)
+        for i, school in enumerate(df["School"]):
+            plt.scatter(df.columns[1:], df.iloc[i, 1:], marker=markers[i], label=school, color="k", s=100, zorder=3)
 
-        plt.title('Pupil Absences by School')
-        plt.xlabel('Months')
-        plt.ylabel('Number of Absences')
+        plt.title("Pupil Absences by School")
+        plt.xlabel("Months")
+        plt.ylabel("Number of Absences")
         plt.xticks(rotation=45)
-        plt.legend(title='Schools',bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.legend(title="Schools", bbox_to_anchor=(1.05, 1), loc="upper left")
         plt.tight_layout()
     else:
-        plt.imshow(df.iloc[:, 1:], cmap='binary', aspect='auto')  
+        plt.imshow(df.iloc[:, 1:], cmap="binary", aspect="auto")
 
-        plt.colorbar(label='Number of Absences')
-        plt.xticks(ticks=np.arange(len(df.columns)-1), labels=df.columns[1:], rotation=45)
-        plt.yticks(ticks=np.arange(len(df['School'])), labels=df['School'])
-        plt.title('Pupil Absences by School')
-        plt.xlabel('Months')
-        plt.ylabel('Schools')
+        plt.colorbar(label="Number of Absences")
+        plt.xticks(ticks=np.arange(len(df.columns) - 1), labels=df.columns[1:], rotation=45)
+        plt.yticks(ticks=np.arange(len(df["School"])), labels=df["School"])
+        plt.title("Pupil Absences by School")
+        plt.xlabel("Months")
+        plt.ylabel("Schools")
         plt.tight_layout()
     return fig
-        
+
+
 def generate_question_and_answers(data):
     # Select highest or lowest
     hl = "highest" if random.randint(0, 1) else "lowest"
@@ -109,7 +117,7 @@ def generate_question_and_answers(data):
 
         # Select three random incorrect answers
         answers = random.sample([month for month in months if month != correct_answer], 3)
-    
+
     # Append the correct answer into our list of answers at a random index
     answers.append(correct_answer)
     random.shuffle(answers)
@@ -117,23 +125,26 @@ def generate_question_and_answers(data):
     # Return the question, the list of potential answers, and the index of the correct answer
     return question, answers, answers.index(correct_answer)
 
+
 def add_result(df, part_id, v_type, answer, t):
     # Create a new row as a DataFrame
     result = pd.DataFrame([[part_id, v_type, answer, t]], columns=df.columns)
     return pd.concat([df, result], ignore_index=True)
 
-        
+
 # Iniciar el experimento
-#if __name__ == "__main__":
-    #st.title("Visualisation Evaluation")
+# if __name__ == "__main__":
+# st.title("Visualisation Evaluation")
+
 
 def start_experiment():
     st.session_state.experiment_started = True
     st.empty()
 
+
 if "experiment_started" not in st.session_state:
     st.session_state.experiment_started = False
-    
+
 
 # Si el experimento no ha comenzado, muestra la pantalla de bienvenida
 if not st.session_state.experiment_started:
@@ -157,15 +168,15 @@ if not st.session_state.experiment_started:
               linked to your responses.""")
     if st.button("Start Experiment"):
         start_experiment()
-        st.experimental_rerun()
+        st.rerun()
 else:
     col1, col2 = st.columns(2)
     data = generate_random_data()
     vis = generate_visualisation(data, 1)
-    
+
     with col1:
         st.pyplot(vis, use_container_width=True)
-        
+
     with col2:
         st.subheader("Insert the question here")
-        answer = st.radio(' ', ['School A', 'School B', 'School C'])
+        answer = st.radio(" ", ["School A", "School B", "School C"])
