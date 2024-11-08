@@ -1,17 +1,18 @@
-import streamlit as st
-import time
-import numpy as np
-import matplotlib.pyplot as plt
 import random
+import time
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-import os
+import streamlit as st
 
 st.set_page_config(layout="wide")
 
 # Definition of the file name
-file_name = "results_experiment.csv"
+file_name = Path("results_experiment.csv")
 
-if os.path.isfile(file_name):
+if file_name.is_file():
     # If the file exists, it opens the file and read it
     df_results = pd.read_csv(file_name)
 else:
@@ -55,7 +56,7 @@ def generate_random_data():
 
     df = pd.DataFrame(data, columns=months)
     df["School"] = school_options
-    df = df[["School"] + df.columns[:-1].tolist()]
+    df = df[["School", *df.columns[:-1].tolist()]]
 
     return df
 
@@ -107,7 +108,9 @@ def generate_question_and_answers(data):
         correct_answer = f"School {data.iloc[correct_answer_idx]["School"]}"
 
         # Select three random incorrect answers
-        answers = random.sample([f"School {data.iloc[school]["School"]}" for school in data.index if school != correct_answer_idx], 3)
+        answers = random.sample(
+            [f"School {data.iloc[school]["School"]}" for school in data.index if school != correct_answer_idx], 3
+        )
     else:
         schools = school_options
 
@@ -155,21 +158,21 @@ if "experiment_started" not in st.session_state:
 if not st.session_state.experiment_started:
     st.title("Visualisation Evaluation")
     st.subheader("Instructions:")
-    st.write("""You will complete 20 multiple-choice questions, 
-              where each question corresponds to one of the two types of 
-              visualizations: scatterplots or heatmaps. 
-              The questions are alternated between the two visualization types, 
+    st.write("""You will complete 20 multiple-choice questions,
+              where each question corresponds to one of the two types of
+              visualizations: scatterplots or heatmaps.
+              The questions are alternated between the two visualization types,
               with a brief one-second white screen between each question.
 
-              \nThe experiment will take approximately 35 minutes. 
-              Once you select an answer option for each question, 
-              you will not have the opportunity to change it, 
-              and you will automatically proceed to the next question. 
-              Please read each question carefully and answer thoughtfully, 
+              \nThe experiment will take approximately 35 minutes.
+              Once you select an answer option for each question,
+              you will not have the opportunity to change it,
+              and you will automatically proceed to the next question.
+              Please read each question carefully and answer thoughtfully,
               as your responses cannot be modified once submitted.
 
-              \nYour responses will be recorded anonymously. 
-              No personal data will be collected, and your identity will not be 
+              \nYour responses will be recorded anonymously.
+              No personal data will be collected, and your identity will not be
               linked to your responses.""")
     if st.button("Start Experiment"):
         start_experiment()
