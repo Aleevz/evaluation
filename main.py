@@ -21,6 +21,7 @@ else:
     df_results = pd.DataFrame(columns=["participant_ID", "question_number", "vis_type", "correct_answer", "time_(s)"])
     st.session_state.user_id = 1  # First participant
 
+
 # Function to get id and create a new one
 def get_id(df):
     return 0 if df.empty else (df.iloc[-1, 0] + 1)
@@ -87,7 +88,6 @@ def generate_visualisation(df, no_question):
     return fig
 
 
-
 def generate_question_and_answers(data):
     # Select highest or lowest
     hl = "highest" if random.randint(0, 1) else "lowest"
@@ -121,7 +121,11 @@ def generate_question_and_answers(data):
         question = question.replace("[school]", f"School {schools[school]}")
 
         # Find the correct answer to the question
-        correct_answer = data.iloc[school][months].astype(int).idxmax() if hl == "highest" else data.iloc[school][months].astype(int).idxmin()
+        correct_answer = (
+            data.iloc[school][months].astype(int).idxmax()
+            if hl == "highest"
+            else data.iloc[school][months].astype(int).idxmin()
+        )
 
         # Select three random incorrect answers
         answers = random.sample([month for month in months if month != correct_answer], 3)
@@ -156,32 +160,36 @@ def process_answer(selected_answer, correct_answer):
     new_row = pd.DataFrame([results])
 
     st.session_state.user_results = pd.concat([st.session_state.user_results, new_row], ignore_index=True)
-    
+
     if st.session_state.question_num == 20:
-        st.markdown("""
+        st.markdown(
+            """
                     <style>
                     body {
                         display: none;
                     }
                     </style>
-                    """, unsafe_allow_html=True)
+                    """,
+            unsafe_allow_html=True,
+        )
         st.session_state.user_results.to_csv(file_name, index=False)
         st.stop()
-        
-    st.markdown("""
+
+    st.markdown(
+        """
                 <style>
                 body {
                     display: none;
                 }
                 </style>
-                """, unsafe_allow_html=True)
+                """,
+        unsafe_allow_html=True,
+    )
     time.sleep(1)
     st.rerun()
 
 
-
 def start_experiment():
-    global df_results
     st.session_state.experiment_started = True
     st.session_state.question_answered = False
     st.session_state.question_num = 0
@@ -217,20 +225,20 @@ if not st.session_state.experiment_started:
               \nYour responses will be recorded anonymously.
               No personal data will be collected, and your identity will not be
               linked to your responses.
-              
-              \nAt the end of the experiment, a white screen will appear, 
-              but unlike the white screen between questions, it will remain 
-              unchanged and there will be no more questions. 
-              This indicates that the experiment is over, and you can close the 
+
+              \nAt the end of the experiment, a white screen will appear,
+              but unlike the white screen between questions, it will remain
+              unchanged and there will be no more questions.
+              This indicates that the experiment is over, and you can close the
               window or exit at any time. """)
     st.subheader("Thank you for your participation!")
     if st.button("Start Experiment"):
         start_experiment()
         st.session_state.question_start_time = time.time()
         st.rerun()
-else:   
+else:
     col1, col2 = st.columns(2)
-    
+
     if not st.session_state.question_answered:
         st.session_state.data = data = generate_random_data()
         vis = generate_visualisation(data, st.session_state.question_num)
@@ -240,18 +248,18 @@ else:
     else:
         data = st.session_state.data
         question, options, answer_idx = st.session_state.question_data
-    
+
     with col1:
         if not st.session_state.question_answered:
             st.pyplot(vis, use_container_width=True)
-    
+
     with col2:
         st.subheader(f"{st.session_state.question_num}. {question}")
         answer = st.radio(" ", options, index=None)
-    
+
         st.session_state.question_answered = not st.session_state.question_answered
-            
+
         st.session_state.selected_answer = answer
-    
+
         if st.session_state.selected_answer:
             process_answer(answer, options[answer_idx])
