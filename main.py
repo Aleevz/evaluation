@@ -21,10 +21,6 @@ else:
     df_results = pd.DataFrame(columns=["participant_ID", "question_number", "vis_type", "correct_answer", "time_(s)"])
     st.session_state.user_id = 1  # First participant
 
-# Function to get id and create a new one
-def get_id(df):
-    return 0 if df.empty else (df.iloc[-1, 0] + 1)
-
 
 questions = [
     "Which school had the [size] number absences in [month]?",
@@ -46,9 +42,6 @@ months = [
 ]
 
 school_options = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-
-participant_id = get_id(df_results)
-
 
 def generate_random_data():
     data = np.random.randint(20, 100, size=(10, 11))
@@ -121,7 +114,12 @@ def generate_question_and_answers(data):
         question = question.replace("[school]", f"School {schools[school]}")
 
         # Find the correct answer to the question
-        correct_answer = data.iloc[school][months].astype(int).idxmax() if hl == "highest" else data.iloc[school][months].astype(int).idxmin()
+        correct_answer = (
+            data.iloc[school][months].astype(int).idxmax()
+            if hl == "highest"
+            else data.iloc[school][months].astype(int).idxmin()
+            )
+        
 
         # Select three random incorrect answers
         answers = random.sample([month for month in months if month != correct_answer], 3)
@@ -132,13 +130,6 @@ def generate_question_and_answers(data):
 
     # Return the question, the list of potential answers, and the index of the correct answer
     return question, answers, answers.index(correct_answer)
-
-
-def add_result(df, part_id, v_type, answer, t):
-    # Create a new row as a DataFrame
-    result = pd.DataFrame([[part_id, v_type, answer, t]], columns=df.columns)
-    return pd.concat([df, result], ignore_index=True)
-
 
 def process_answer(selected_answer, correct_answer):
     time_taken = time.time() - st.session_state.question_start_time
@@ -158,27 +149,31 @@ def process_answer(selected_answer, correct_answer):
     st.session_state.user_results = pd.concat([st.session_state.user_results, new_row], ignore_index=True)
     
     if st.session_state.question_num == 20:
-        st.markdown("""
+        st.markdown(
+            """
                     <style>
                     body {
                         display: none;
                     }
                     </style>
-                    """, unsafe_allow_html=True)
+                    """, 
+                    unsafe_allow_html=True
+                    )
         st.session_state.user_results.to_csv(file_name, index=False)
         st.stop()
         
-    st.markdown("""
+    st.markdown(
+        """
                 <style>
                 body {
                     display: none;
                 }
                 </style>
-                """, unsafe_allow_html=True)
+                """, 
+                unsafe_allow_html=True
+                )
     time.sleep(1)
     st.rerun()
-
-
 
 def start_experiment():
     global df_results
@@ -196,8 +191,6 @@ def start_experiment():
 if "experiment_started" not in st.session_state:
     st.session_state.experiment_started = False
 
-
-# Si el experimento no ha comenzado, muestra la pantalla de bienvenida
 if not st.session_state.experiment_started:
     st.title("Visualisation Evaluation")
     st.subheader("Instructions:")
@@ -217,18 +210,18 @@ if not st.session_state.experiment_started:
               \nYour responses will be recorded anonymously.
               No personal data will be collected, and your identity will not be
               linked to your responses.
-              
-              \nAt the end of the experiment, a white screen will appear, 
-              but unlike the white screen between questions, it will remain 
-              unchanged and there will be no more questions. 
-              This indicates that the experiment is over, and you can close the 
-              window or exit at any time. """)
+
+              \nAt the end of the experiment, a white screen will appear,
+              but unlike the white screen between questions, it will remain
+              unchanged and there will be no more questions.
+              This indicates that the experiment is over, and you can close the
+              window or exit at any time.""")
     st.subheader("Thank you for your participation!")
     if st.button("Start Experiment"):
         start_experiment()
         st.session_state.question_start_time = time.time()
         st.rerun()
-else:   
+else:
     col1, col2 = st.columns(2)
     
     if not st.session_state.question_answered:
