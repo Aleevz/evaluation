@@ -21,10 +21,6 @@ else:
     df_results = pd.DataFrame(columns=["participant_ID", "question_number", "vis_type", "correct_answer", "time_(s)"])
     st.session_state.user_id = 1  # First participant
 
-# Function to get id and create a new one
-def get_id(df):
-    return 0 if df.empty else (df.iloc[-1, 0] + 1)
-
 
 questions = [
     "Which school had the [size] number absences in [month]?",
@@ -46,8 +42,6 @@ months = [
 ]
 
 school_options = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-
-participant_id = get_id(df_results)
 
 
 def generate_random_data():
@@ -133,13 +127,6 @@ def generate_question_and_answers(data):
     # Return the question, the list of potential answers, and the index of the correct answer
     return question, answers, answers.index(correct_answer)
 
-
-def add_result(df, part_id, v_type, answer, t):
-    # Create a new row as a DataFrame
-    result = pd.DataFrame([[part_id, v_type, answer, t]], columns=df.columns)
-    return pd.concat([df, result], ignore_index=True)
-
-
 def process_answer(selected_answer, correct_answer):
     time_taken = time.time() - st.session_state.question_start_time
     correct = 1 if selected_answer == correct_answer else 0
@@ -165,6 +152,7 @@ def process_answer(selected_answer, correct_answer):
                     }
                     </style>
                     """, unsafe_allow_html=True)
+                    
         st.session_state.user_results.to_csv(file_name, index=False)
         st.stop()
         
