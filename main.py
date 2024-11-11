@@ -26,7 +26,7 @@ else:
 
 questions = [
     "Which school had the [size] number absences in [month]?",
-    "In which month did [school] have the [size] number absences?",
+    "In which month did [school] have the [size] number of absences?",
 ]
 
 months = [
@@ -134,7 +134,7 @@ def generate_question_and_answers(data):
 
 
 def process_answer(selected_answer, correct_answer):
-    time_taken = time.time() - st.session_state.question_start_time
+    time_taken = round(time.time() - st.session_state.question_start_time, 2)
     correct = 1 if selected_answer == correct_answer else 0
     vis_type = "heatmap" if st.session_state.question_num % 2 == 0 else "scatterplot"
 
