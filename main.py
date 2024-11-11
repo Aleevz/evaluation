@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+QUESTION_LIMIT = 20
+
 st.set_page_config(layout="wide")
 
 # Definition of the file name
@@ -43,6 +45,7 @@ months = [
 
 school_options = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
 
+
 def generate_random_data():
     data = np.random.randint(20, 100, size=(10, 11))
 
@@ -78,7 +81,6 @@ def generate_visualisation(df, no_question):
         plt.ylabel("Schools")
         plt.tight_layout()
     return fig
-
 
 
 def generate_question_and_answers(data):
@@ -118,8 +120,7 @@ def generate_question_and_answers(data):
             data.iloc[school][months].astype(int).idxmax()
             if hl == "highest"
             else data.iloc[school][months].astype(int).idxmin()
-            )
-        
+        )
 
         # Select three random incorrect answers
         answers = random.sample([month for month in months if month != correct_answer], 3)
@@ -130,6 +131,7 @@ def generate_question_and_answers(data):
 
     # Return the question, the list of potential answers, and the index of the correct answer
     return question, answers, answers.index(correct_answer)
+
 
 def process_answer(selected_answer, correct_answer):
     time_taken = time.time() - st.session_state.question_start_time
@@ -147,21 +149,10 @@ def process_answer(selected_answer, correct_answer):
     new_row = pd.DataFrame([results])
 
     st.session_state.user_results = pd.concat([st.session_state.user_results, new_row], ignore_index=True)
-    
-    if st.session_state.question_num == 20:
-        st.markdown(
-            """
-                    <style>
-                    body {
-                        display: none;
-                    }
-                    </style>
-                    """, 
-                    unsafe_allow_html=True
-                    )
+
+    if st.session_state.question_num == QUESTION_LIMIT:
         st.session_state.user_results.to_csv(file_name, index=False)
-        st.stop()
-        
+
     st.markdown(
         """
                 <style>
@@ -169,17 +160,18 @@ def process_answer(selected_answer, correct_answer):
                     display: none;
                 }
                 </style>
-                """, 
-                unsafe_allow_html=True
-                )
+                """,
+        unsafe_allow_html=True,
+    )
     time.sleep(1)
+    st.session_state.question_num += 1
     st.rerun()
 
+
 def start_experiment():
-    global df_results
     st.session_state.experiment_started = True
     st.session_state.question_answered = False
-    st.session_state.question_num = 0
+    st.session_state.question_num = 1
     st.session_state.data = None
     st.session_state.question_data = None
     st.session_state.selected_answer = None
@@ -209,42 +201,41 @@ if not st.session_state.experiment_started:
 
               \nYour responses will be recorded anonymously.
               No personal data will be collected, and your identity will not be
-              linked to your responses.
-
-              \nAt the end of the experiment, a white screen will appear,
-              but unlike the white screen between questions, it will remain
-              unchanged and there will be no more questions.
-              This indicates that the experiment is over, and you can close the
-              window or exit at any time.""")
+              linked to your responses.""")
     st.subheader("Thank you for your participation!")
     if st.button("Start Experiment"):
         start_experiment()
         st.session_state.question_start_time = time.time()
         st.rerun()
+elif st.session_state.experiment_started and st.session_state.question_num > QUESTION_LIMIT:
+    st.title("Test Complete")
+    st.subheader("Thank you for participating")
+    st.stop()
 else:
     col1, col2 = st.columns(2)
-    
+
     if not st.session_state.question_answered:
         st.session_state.data = data = generate_random_data()
         vis = generate_visualisation(data, st.session_state.question_num)
-        st.session_state.question_num += 1
         st.session_state.question_data = question, options, answer_idx = generate_question_and_answers(data)
-        st.session_state.question_start_time = time.time()
     else:
         data = st.session_state.data
         question, options, answer_idx = st.session_state.question_data
-    
+
     with col1:
         if not st.session_state.question_answered:
             st.pyplot(vis, use_container_width=True)
-    
+
     with col2:
         st.subheader(f"{st.session_state.question_num}. {question}")
         answer = st.radio(" ", options, index=None)
-    
+
+        if not st.session_state.question_answered:
+            st.session_state.question_start_time = time.time()
+
         st.session_state.question_answered = not st.session_state.question_answered
-            
+
         st.session_state.selected_answer = answer
-    
+
         if st.session_state.selected_answer:
             process_answer(answer, options[answer_idx])
