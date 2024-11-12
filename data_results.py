@@ -26,6 +26,6 @@ def add_result(df, part_id, v_type, answer, t):
     return pd.concat([df, result], ignore_index=True)
   
 # Add the new result and update the dataframe
-df_results = add_result(df_results, p_id, vtype, a, t)
+df_results = add_result(df_results)
 
 df_results.to_csv("results_experiment.csv", index=False)
