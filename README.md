@@ -1,4 +1,4 @@
-# Visualisation Evaluation
+# Visualization Evaluation
 
 In the sphere of data analysis, visualisation is very important, as it transforms raw data into a form that's much more easily understood, and hence it reaches an even bigger audience. Visualisations use visual cues: color, shape, size, to emphasize trends, patterns, and anomalies, making it easy to bring important insight very quickly to the attention of the user. 
 
