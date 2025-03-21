@@ -7,4 +7,7 @@ Equally important is user evaluation for these visualisations, since it would en
 ## Objective
 The principal objective of this project is to conduct an experiment which aims to systematically investigate the effectiveness of heatmaps and scatterplots in visualising pupil absences across a hypothetical dataset encompassing ten schools over an academic year. By assessing participants accuracy, response time, and the ability to interpret the data, the research seeks to determine which method is able to portray the information about pupil absences with a greater impact.
 
-## 
+## Installation
+To install and run the application, follow these steps:
+### Clone this repository:
+
