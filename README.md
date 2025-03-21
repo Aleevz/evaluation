@@ -10,4 +10,12 @@ The principal objective of this project is to conduct an experiment which aims t
 ## Installation
 To install and run the application, follow these steps:
 ### Clone this repository:
+    git clone https://github.com/Aleevz/evaluation.git
+    
+### Navigate to the project directory:
+    cd devaluation
+
+### Install the necessary dependencies:
+    pip install -r requirements.txt
+
 
