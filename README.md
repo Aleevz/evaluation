@@ -18,4 +18,31 @@ To install and run the application, follow these steps:
 ### Install the necessary dependencies:
     pip install -r requirements.txt
 
+## Running the Application
+Run the following command in the project directory:
+    streamlit run main.py
 
+This application is an interactive experiment designed to evaluate the effectiveness of different types of visualizations (scatterplots and heatmaps) in representing student absence data across ten schools over an academic year.
+
+### How the Application Works
+1. Participant Registration:
+Each participant is assigned a unique ID.
+Their results are recorded in the results_experiment.csv file.
+2. Data Generation:
+A random dataset is generated, representing the number of absences per month for 10 schools.
+3. Question and Visualization Generation:
+The experiment consists of 20 multiple-choice questions, alternating between:
+    Scatterplots: Display absences as points in a scatter plot.
+    Heatmaps: Use a heatmap to show the number of absences.
+    Each question asks participants to identify which school or month had the highest or lowest number of absences.
+4. User Interaction:
+The corresponding visualization is displayed along with the question.
+The participant selects one of four possible answers.
+The response, along with the time taken, is recorded.
+5. Results Logging:
+Accuracy, response time, and visualization type are stored in results_experiment.csv.
+
+## Further Analysis & Reproducibility
+To better understand the findings of this project, you can refer to the report, which details the statistical analysis conducted. We applied t-tests, confidence intervals, and hypothesis testing to determine whether there is a significant difference in accuracy and response time between the two visualization types (scatterplots and heatmaps).
+
+If you would like to conduct your own experiments, we have provided a Jupyter Notebook containing all the necessary code to run hypothesis tests, statistical analyses, and visualizations of the results. This allows you to replicate our study or extend it with your own data.
